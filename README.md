@@ -1,5 +1,5 @@
 
-# socket.io-go-redis-adapter
+# socket.io-go-redis
 
 [![Build Status](https://github.com/zishang520/socket.io-go-redis/workflows/Go/badge.svg?branch=main)](https://github.com/zishang520/socket.io-go-redis/actions)
 [![GoDoc](https://pkg.go.dev/badge/github.com/zishang520/socket.io-go-redis?utm_source=godoc)](https://pkg.go.dev/github.com/zishang520/socket.io-go-redis)
@@ -30,7 +30,7 @@ git clone git://github.com/zishang520/socket.io-go-redis.git
 Then:
 
 ```bash
-cd socket.io-go-redis-adapter
+cd socket.io-go-redis
 make test
 ```
 
