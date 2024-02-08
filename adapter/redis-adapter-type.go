@@ -44,7 +44,7 @@ func (a *ackRequest) Ack(packet []any, err error) {
 type (
 	Request struct {
 		Type     _types.RequestType `json:"type,omitempty" mapstructure:"type,omitempty" msgpack:"type,omitempty"`
-		Resolve  func(any, error)   `json:"resolve,omitempty" mapstructure:"resolve,omitempty" msgpack:"resolve,omitempty"`
+		Resolve  func(any, error)   `json:"-"`
 		Timeout  *utils.Timer       `json:"timeout,omitempty" mapstructure:"timeout,omitempty" msgpack:"timeout,omitempty"`
 		NumSub   int64              `json:"numSub,omitempty" mapstructure:"numSub,omitempty" msgpack:"numSub,omitempty"`
 		MsgCount int64              `json:"msgCount,omitempty" mapstructure:"msgCount,omitempty" msgpack:"msgCount,omitempty"`
