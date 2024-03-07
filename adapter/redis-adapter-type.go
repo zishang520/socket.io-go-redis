@@ -43,11 +43,7 @@ func (a *ackRequest) Ack(packet []any, err error) {
 
 type (
 	Request struct {
-		Type     _types.RequestType `json:"type,omitempty" mapstructure:"type,omitempty" msgpack:"type,omitempty"`
-		Resolve  func(any, error)   `json:"-"`
-		Timeout  *utils.Timer       `json:"timeout,omitempty" mapstructure:"timeout,omitempty" msgpack:"timeout,omitempty"`
-		NumSub   int64              `json:"numSub,omitempty" mapstructure:"numSub,omitempty" msgpack:"numSub,omitempty"`
-		MsgCount int64              `json:"msgCount,omitempty" mapstructure:"msgCount,omitempty" msgpack:"msgCount,omitempty"`
+		Type _types.RequestType `json:"type,omitempty" mapstructure:"type,omitempty" msgpack:"type,omitempty"`
 
 		RequestId string                `json:"requestId,omitempty" mapstructure:"requestId,omitempty" msgpack:"requestId,omitempty"`
 		Rooms     []socket.Room         `json:"rooms,omitempty" mapstructure:"rooms,omitempty" msgpack:"rooms,omitempty"`
@@ -58,8 +54,18 @@ type (
 		Uid       string                `json:"uid,omitempty" mapstructure:"uid,omitempty" msgpack:"uid,omitempty"`
 		Data      []any                 `json:"data,omitempty" mapstructure:"data,omitempty" msgpack:"data,omitempty"`
 		Packet    *parser.Packet        `json:"packet,omitempty" mapstructure:"packet,omitempty" msgpack:"packet,omitempty"`
-		Sockets   []*ResponseSockets    `json:"sockets,omitempty" mapstructure:"sockets,omitempty" msgpack:"sockets,omitempty"`
-		Responses []any                 `json:"responses,omitempty" mapstructure:"responses,omitempty" msgpack:"responses,omitempty"`
+	}
+
+	SentRequest struct {
+		Type     _types.RequestType
+		Resolve  func(any, error)
+		Timeout  *utils.Timer
+		NumSub   int64
+		MsgCount int64
+
+		Rooms     []socket.Room
+		Sockets   []*ResponseSockets
+		Responses []any
 	}
 
 	Response struct {
@@ -70,6 +76,13 @@ type (
 		Data        []any              `json:"data,omitempty" mapstructure:"data,omitempty" msgpack:"data,omitempty"`
 		ClientCount uint64             `json:"clientcount,omitempty" mapstructure:"clientcount,omitempty" msgpack:"clientcount,omitempty"`
 		Packet      []any              `json:"packet,omitempty" mapstructure:"packet,omitempty" msgpack:"packet,omitempty"`
+	}
+
+	ServerRequest struct {
+		RequestId string             `json:"requestId,omitempty" mapstructure:"requestId,omitempty" msgpack:"requestId,omitempty"`
+		Uid       string             `json:"uid,omitempty" mapstructure:"uid,omitempty" msgpack:"uid,omitempty"`
+		Type      _types.RequestType `json:"type,omitempty" mapstructure:"type,omitempty" msgpack:"type,omitempty"`
+		Data      []any              `json:"data,omitempty" mapstructure:"data,omitempty" msgpack:"data,omitempty"`
 	}
 
 	RedisAdapter interface {

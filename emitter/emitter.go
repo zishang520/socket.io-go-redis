@@ -108,7 +108,7 @@ func (e *Emitter) ServerSideEmit(ev string, args ...any) error {
 	if _, withAck := args[len(args)-1].(func([]any, error)); withAck {
 		return errors.New("Acknowledgements are not supported")
 	}
-	request, err := json.Marshal(&Request{
+	request, err := json.Marshal(&ServerRequest{
 		Uid:  UID,
 		Type: types.REQUEST_SERVER_SIDE_EMIT,
 		Data: append([]any{ev}, args...),
