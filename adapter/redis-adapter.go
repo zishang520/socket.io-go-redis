@@ -49,7 +49,7 @@ type redisAdapter struct {
 	responseChannel         string
 	specificResponseChannel string
 
-	requests             *types.Map[string, *Request]
+	requests             *types.Map[string, *SentRequest]
 	ackRequests          *types.Map[string, AckRequest]
 	redisListeners       *types.Map[string, *redis.PubSub]
 	friendlyErrorHandler func(...any)
@@ -60,7 +60,7 @@ func MakeRedisAdapter() RedisAdapter {
 		Adapter: socket.MakeAdapter(),
 
 		opts:                 DefaultRedisAdapterOptions(),
-		requests:             &types.Map[string, *Request]{},
+		requests:             &types.Map[string, *SentRequest]{},
 		ackRequests:          &types.Map[string, AckRequest]{},
 		redisListeners:       &types.Map[string, *redis.PubSub]{},
 		friendlyErrorHandler: func(...any) {},
@@ -692,7 +692,7 @@ func (r *redisAdapter) AllRooms() func(func(*types.Set[socket.Room], error)) {
 					}
 				}, r.requestsTimeout)
 
-				r.requests.Store(requestId, &Request{
+				r.requests.Store(requestId, &SentRequest{
 					Type:   _types.REQUEST_ALL_ROOMS,
 					NumSub: numSub,
 					Resolve: func(data any, err error) {
@@ -744,7 +744,7 @@ func (r *redisAdapter) FetchSockets(opts *socket.BroadcastOptions) func(func([]s
 						}
 					}, r.requestsTimeout)
 
-					r.requests.Store(requestId, &Request{
+					r.requests.Store(requestId, &SentRequest{
 						Type:   _types.REQUEST_REMOTE_FETCH,
 						NumSub: numSub,
 						Resolve: func(data any, err error) {
@@ -843,7 +843,7 @@ func (r *redisAdapter) ServerSideEmit(packet []any) error {
 		return nil
 	}
 
-	request, err := json.Marshal(&Request{
+	request, err := json.Marshal(&ServerRequest{
 		Uid:  r.uid,
 		Type: _types.REQUEST_SERVER_SIDE_EMIT,
 		Data: packet,
@@ -867,7 +867,7 @@ func (r *redisAdapter) serverSideEmitWithAck(packet []any) {
 	}
 
 	if requestId, err := Uid2(6); err == nil {
-		if request, err := json.Marshal(&Request{
+		if request, err := json.Marshal(&ServerRequest{
 			Uid:       r.uid,
 			RequestId: requestId, // the presence of this attribute defines whether an acknowledgement is needed
 			Type:      _types.REQUEST_SERVER_SIDE_EMIT,
@@ -880,7 +880,7 @@ func (r *redisAdapter) serverSideEmitWithAck(packet []any) {
 				}
 			}, r.requestsTimeout)
 
-			r.requests.Store(requestId, &Request{
+			r.requests.Store(requestId, &SentRequest{
 				Type:    _types.REQUEST_SERVER_SIDE_EMIT,
 				NumSub:  numSub,
 				Timeout: timeout,
