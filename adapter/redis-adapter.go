@@ -181,10 +181,17 @@ func (r *redisAdapter) onmessage(pattern string, channel string, msg []byte) {
 		return
 	}
 
-	room := channel[len(r.channel):]
-	if room != "" && !r.hasRoom(socket.Room(room)) {
-		redis_log.Debug("ignore unknown room %s", room)
-		return
+	if len(r.channel) < len(channel) {
+		if !strings.HasSuffix(channel, "#") {
+			redis_log.Debug("ignore invalid channel %s", channel)
+			return
+		}
+
+		room := channel[len(r.channel):len(channel)-1]
+		if !r.hasRoom(socket.Room(room)) {
+			redis_log.Debug("ignore unknown room %s", room)
+			return
+		}
 	}
 
 	var args *_types.Packet
