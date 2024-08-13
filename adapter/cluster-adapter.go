@@ -45,7 +45,7 @@ type ClusterAdapterBuilder struct {
 	socket.AdapterConstructor
 }
 
-func (cb *ClusterAdapterBuilder) New(nsp socket.NamespaceInterface) socket.Adapter {
+func (cb *ClusterAdapterBuilder) New(nsp socket.Namespace) socket.Adapter {
 	return NewClusterAdapter(nsp)
 }
 
@@ -71,7 +71,7 @@ func MakeClusterAdapter() ClusterAdapter {
 	return c
 }
 
-func NewClusterAdapter(nsp socket.NamespaceInterface) ClusterAdapter {
+func NewClusterAdapter(nsp socket.Namespace) ClusterAdapter {
 	c := MakeClusterAdapter()
 
 	c.Construct(nsp)
@@ -79,7 +79,7 @@ func NewClusterAdapter(nsp socket.NamespaceInterface) ClusterAdapter {
 	return c
 }
 
-func (c *clusterAdapter) Construct(nsp socket.NamespaceInterface) {
+func (c *clusterAdapter) Construct(nsp socket.Namespace) {
 	c.Adapter.Construct(nsp)
 	c.uid, _ = RandomId()
 }
