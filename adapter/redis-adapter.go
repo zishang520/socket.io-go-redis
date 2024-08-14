@@ -29,7 +29,7 @@ type RedisAdapterBuilder struct {
 }
 
 // Adapter constructor.
-func (rb *RedisAdapterBuilder) New(nsp socket.NamespaceInterface) socket.Adapter {
+func (rb *RedisAdapterBuilder) New(nsp socket.Namespace) socket.Adapter {
 	return NewRedisAdapter(nsp, rb.Redis, rb.Opts)
 }
 
@@ -71,7 +71,7 @@ func MakeRedisAdapter() RedisAdapter {
 	return c
 }
 
-func NewRedisAdapter(nsp socket.NamespaceInterface, redis *_types.RedisClient, opts *RedisAdapterOptions) RedisAdapter {
+func NewRedisAdapter(nsp socket.Namespace, redis *_types.RedisClient, opts *RedisAdapterOptions) RedisAdapter {
 	c := MakeRedisAdapter()
 
 	c.SetRedis(redis)
@@ -82,7 +82,7 @@ func NewRedisAdapter(nsp socket.NamespaceInterface, redis *_types.RedisClient, o
 	return c
 }
 
-func (r *redisAdapter) Construct(nsp socket.NamespaceInterface) {
+func (r *redisAdapter) Construct(nsp socket.Namespace) {
 	r.Adapter.Construct(nsp)
 
 	r.uid, _ = Uid2(6)
@@ -187,7 +187,7 @@ func (r *redisAdapter) onmessage(pattern string, channel string, msg []byte) {
 			return
 		}
 
-		room := channel[len(r.channel):len(channel)-1]
+		room := channel[len(r.channel) : len(channel)-1]
 		if !r.hasRoom(socket.Room(room)) {
 			redis_log.Debug("ignore unknown room %s", room)
 			return

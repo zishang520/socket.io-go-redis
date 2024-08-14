@@ -23,7 +23,7 @@ type ShardedRedisAdapterBuilder struct {
 	Opts *ShardedRedisAdapterOptions
 }
 
-func (sb *ShardedRedisAdapterBuilder) New(nsp socket.NamespaceInterface) socket.Adapter {
+func (sb *ShardedRedisAdapterBuilder) New(nsp socket.Namespace) socket.Adapter {
 	return NewShardedRedisAdapter(nsp, sb.Redis, sb.Opts)
 }
 
@@ -52,7 +52,7 @@ func MakeShardedRedisAdapter() ShardedRedisAdapter {
 	return c
 }
 
-func NewShardedRedisAdapter(nsp socket.NamespaceInterface, redis *_types.RedisClient, opts *ShardedRedisAdapterOptions) ShardedRedisAdapter {
+func NewShardedRedisAdapter(nsp socket.Namespace, redis *_types.RedisClient, opts *ShardedRedisAdapterOptions) ShardedRedisAdapter {
 	c := MakeShardedRedisAdapter()
 
 	c.SetRedis(redis)
@@ -63,7 +63,7 @@ func NewShardedRedisAdapter(nsp socket.NamespaceInterface, redis *_types.RedisCl
 	return c
 }
 
-func (s *shardedRedisAdapter) Construct(nsp socket.NamespaceInterface) {
+func (s *shardedRedisAdapter) Construct(nsp socket.Namespace) {
 	s.ClusterAdapter.Construct(nsp)
 
 	s.channel = s.opts.ChannelPrefix() + "#" + nsp.Name() + "#"

@@ -25,7 +25,7 @@ type (
 	}
 )
 
-func (c *ClusterAdapterWithHeartbeatBuilder) New(nsp socket.NamespaceInterface) socket.Adapter {
+func (c *ClusterAdapterWithHeartbeatBuilder) New(nsp socket.Namespace) socket.Adapter {
 	return NewClusterAdapterWithHeartbeat(nsp, c.Opts)
 }
 
@@ -42,7 +42,7 @@ func MakeClusterAdapterWithHeartbeat() ClusterAdapterWithHeartbeat {
 	return c
 }
 
-func NewClusterAdapterWithHeartbeat(nsp socket.NamespaceInterface, opts *ClusterAdapterOptions) ClusterAdapterWithHeartbeat {
+func NewClusterAdapterWithHeartbeat(nsp socket.Namespace, opts *ClusterAdapterOptions) ClusterAdapterWithHeartbeat {
 	c := MakeClusterAdapterWithHeartbeat()
 
 	c.SetOpts(opts)
@@ -52,7 +52,7 @@ func NewClusterAdapterWithHeartbeat(nsp socket.NamespaceInterface, opts *Cluster
 	return c
 }
 
-func (c *clusterAdapterWithHeartbeat) Construct(nsp socket.NamespaceInterface) {
+func (c *clusterAdapterWithHeartbeat) Construct(nsp socket.Namespace) {
 	c.ClusterAdapter.Construct(nsp)
 }
 
