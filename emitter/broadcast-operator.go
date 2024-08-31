@@ -130,7 +130,7 @@ func (b *BroadcastOperator) Emit(ev string, args ...any) error {
 
 	emitter_log.Debug("publishing message to channel %s", channel)
 
-	return b.redis.Publish(b.redis.Context, channel, msg).Err()
+	return b.redis.Client.Publish(b.redis.Context, channel, msg).Err()
 }
 
 // Makes the matching socket instances join the specified rooms
@@ -146,7 +146,7 @@ func (b *BroadcastOperator) SocketsJoin(room ...socket.Room) {
 	if err != nil {
 		return
 	}
-	b.redis.Publish(b.redis.Context, b.broadcastOptions.RequestChannel, request)
+	b.redis.Client.Publish(b.redis.Context, b.broadcastOptions.RequestChannel, request)
 }
 
 // Makes the matching socket instances leave the specified rooms
@@ -162,7 +162,7 @@ func (b *BroadcastOperator) SocketsLeave(room ...socket.Room) {
 	if err != nil {
 		return
 	}
-	b.redis.Publish(b.redis.Context, b.broadcastOptions.RequestChannel, request)
+	b.redis.Client.Publish(b.redis.Context, b.broadcastOptions.RequestChannel, request)
 }
 
 // Makes the matching socket instances disconnect
@@ -178,5 +178,5 @@ func (b *BroadcastOperator) DisconnectSockets(state bool) {
 	if err != nil {
 		return
 	}
-	b.redis.Publish(b.redis.Context, b.broadcastOptions.RequestChannel, request)
+	b.redis.Client.Publish(b.redis.Context, b.broadcastOptions.RequestChannel, request)
 }

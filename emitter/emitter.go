@@ -116,5 +116,5 @@ func (e *Emitter) ServerSideEmit(ev string, args ...any) error {
 	if err != nil {
 		return err
 	}
-	return e.redis.Publish(e.redis.Context, e.broadcastOptions.RequestChannel, request).Err()
+	return e.redis.Client.Publish(e.redis.Context, e.broadcastOptions.RequestChannel, request).Err()
 }
