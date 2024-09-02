@@ -9,12 +9,12 @@ import (
 
 type RedisClient struct {
 	events.EventEmitter
-	*redis.Client
+	Client redis.UniversalClient
 
 	Context context.Context
 }
 
-func NewRedisClient(ctx context.Context, redis *redis.Client) *RedisClient {
+func NewRedisClient(ctx context.Context, redis redis.UniversalClient) *RedisClient {
 	return &RedisClient{
 		EventEmitter: events.New(),
 		Client:       redis,

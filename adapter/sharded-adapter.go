@@ -69,7 +69,7 @@ func (s *shardedRedisAdapter) Construct(nsp socket.Namespace) {
 	s.channel = s.opts.ChannelPrefix() + "#" + nsp.Name() + "#"
 	s.responseChannel = s.opts.ChannelPrefix() + "#" + nsp.Name() + "#" + s.Uid() + "#"
 
-	s.pubsub = s.redis.SSubscribe(s.redis.Context, s.channel)
+	s.pubsub = s.redis.Client.SSubscribe(s.redis.Context, s.channel)
 
 	s.pubsub.SSubscribe(s.redis.Context, s.responseChannel)
 
@@ -138,7 +138,7 @@ func (s *shardedRedisAdapter) PublishMessage(message *ClusterMessage) (int64, er
 		return 0, err
 	}
 
-	return s.redis.SPublish(s.redis.Context, channel, msg).Result()
+	return s.redis.Client.SPublish(s.redis.Context, channel, msg).Result()
 }
 
 func (s *shardedRedisAdapter) computeChannel(message *ClusterMessage) string {
@@ -166,7 +166,7 @@ func (s *shardedRedisAdapter) PublishResponse(requesterUid string, response *Clu
 	if err != nil {
 		return 0, err
 	}
-	return s.redis.SPublish(s.redis.Context, s.channel+requesterUid+"#", message).Result()
+	return s.redis.Client.SPublish(s.redis.Context, s.channel+requesterUid+"#", message).Result()
 }
 
 func (s *shardedRedisAdapter) encode(message *ClusterMessage) ([]byte, error) {
@@ -201,7 +201,7 @@ func (s *shardedRedisAdapter) onRawMessage(rawMessage []byte, channel string) {
 }
 
 func (s *shardedRedisAdapter) ServerCount() int64 {
-	if result, err := s.redis.PubSubShardNumSub(s.redis.Context, s.channel).Result(); err != nil {
+	if result, err := s.redis.Client.PubSubShardNumSub(s.redis.Context, s.channel).Result(); err != nil {
 		if r, ok := result[s.channel]; ok {
 			return r
 		}

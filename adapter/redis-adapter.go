@@ -105,7 +105,7 @@ func (r *redisAdapter) Construct(nsp socket.Namespace) {
 
 	r.redis.On("error", r.friendlyErrorHandler)
 
-	psub := r.redis.PSubscribe(r.redis.Context, r.channel+"*")
+	psub := r.redis.Client.PSubscribe(r.redis.Context, r.channel+"*")
 	r.redisListeners.Store("psub", psub)
 	go func() {
 		defer psub.Close()
@@ -125,7 +125,7 @@ func (r *redisAdapter) Construct(nsp socket.Namespace) {
 		}
 	}()
 
-	sub := r.redis.Subscribe(r.redis.Context, r.requestChannel, r.responseChannel, r.specificResponseChannel)
+	sub := r.redis.Client.Subscribe(r.redis.Context, r.requestChannel, r.responseChannel, r.specificResponseChannel)
 	r.redisListeners.Store("sub", sub)
 	go func() {
 		defer sub.Close()
@@ -422,7 +422,7 @@ func (r *redisAdapter) onrequest(channel string, msg []byte) {
 					redis_log.Debug("SERVER_SIDE_EMIT acknowledgement json.Marshal error: %s", err.Error())
 					return
 				}
-				if err := r.redis.Publish(r.redis.Context, r.responseChannel, response).Err(); err != nil {
+				if err := r.redis.Client.Publish(r.redis.Context, r.responseChannel, response).Err(); err != nil {
 					r.redis.Emit("error", err)
 				}
 			}
@@ -486,7 +486,7 @@ func (r *redisAdapter) PublishResponse(request *Request, response []byte) {
 		responseChannel += request.Uid + "#"
 	}
 	redis_log.Debug("publishing response to channel %s", responseChannel)
-	if err := r.redis.Publish(r.redis.Context, responseChannel, response).Err(); err != nil {
+	if err := r.redis.Client.Publish(r.redis.Context, responseChannel, response).Err(); err != nil {
 		r.redis.Emit("error", err)
 	}
 }
@@ -625,7 +625,7 @@ func (r *redisAdapter) Broadcast(packet *parser.Packet, opts *socket.BroadcastOp
 				channel += string(opts.Rooms.Keys()[0]) + "#"
 			}
 			redis_log.Debug("publishing message to channel %s", channel)
-			if err := r.redis.Publish(r.redis.Context, channel, msg).Err(); err != nil {
+			if err := r.redis.Client.Publish(r.redis.Context, channel, msg).Err(); err != nil {
 				r.redis.Emit("error", err)
 			}
 		}
@@ -653,7 +653,7 @@ func (r *redisAdapter) BroadcastWithAck(packet *parser.Packet, opts *socket.Broa
 				Packet:    packet,
 				Opts:      rawOpts,
 			}); err == nil {
-				if err := r.redis.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
+				if err := r.redis.Client.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
 					r.redis.Emit("error", err)
 				}
 
@@ -710,7 +710,7 @@ func (r *redisAdapter) AllRooms() func(func(*types.Set[socket.Room], error)) {
 					Rooms:    localRooms.Keys(),
 				})
 
-				if err := r.redis.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
+				if err := r.redis.Client.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
 					r.redis.Emit("error", err)
 				}
 			}
@@ -771,7 +771,7 @@ func (r *redisAdapter) FetchSockets(opts *socket.BroadcastOptions) func(func([]s
 						}),
 					})
 
-					if err := r.redis.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
+					if err := r.redis.Client.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
 						r.redis.Emit("error", err)
 					}
 				}
@@ -795,7 +795,7 @@ func (r *redisAdapter) AddSockets(opts *socket.BroadcastOptions, rooms []socket.
 		},
 		Rooms: rooms,
 	}); err == nil {
-		if err := r.redis.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
+		if err := r.redis.Client.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
 			r.redis.Emit("error", err)
 		}
 	}
@@ -816,7 +816,7 @@ func (r *redisAdapter) DelSockets(opts *socket.BroadcastOptions, rooms []socket.
 		},
 		Rooms: rooms,
 	}); err == nil {
-		if err := r.redis.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
+		if err := r.redis.Client.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
 			r.redis.Emit("error", err)
 		}
 	}
@@ -837,7 +837,7 @@ func (r *redisAdapter) DisconnectSockets(opts *socket.BroadcastOptions, state bo
 		},
 		Close: state,
 	}); err == nil {
-		if err := r.redis.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
+		if err := r.redis.Client.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
 			r.redis.Emit("error", err)
 		}
 	}
@@ -859,7 +859,7 @@ func (r *redisAdapter) ServerSideEmit(packet []any) error {
 	if err != nil {
 		return err
 	}
-	return r.redis.Publish(r.redis.Context, r.requestChannel, request).Err()
+	return r.redis.Client.Publish(r.redis.Context, r.requestChannel, request).Err()
 }
 
 func (r *redisAdapter) serverSideEmitWithAck(packet []any) {
@@ -897,7 +897,7 @@ func (r *redisAdapter) serverSideEmitWithAck(packet []any) {
 				Responses: []any{},
 			})
 
-			if err := r.redis.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
+			if err := r.redis.Client.Publish(r.redis.Context, r.requestChannel, request).Err(); err != nil {
 				r.redis.Emit("error", err)
 			}
 		}
@@ -905,7 +905,7 @@ func (r *redisAdapter) serverSideEmitWithAck(packet []any) {
 }
 
 func (r *redisAdapter) ServerCount() int64 {
-	if result, err := r.redis.PubSubNumSub(r.redis.Context, r.requestChannel).Result(); err != nil {
+	if result, err := r.redis.Client.PubSubNumSub(r.redis.Context, r.requestChannel).Result(); err != nil {
 		r.redis.Emit("error", err)
 	} else {
 		if r, ok := result[r.requestChannel]; ok {
