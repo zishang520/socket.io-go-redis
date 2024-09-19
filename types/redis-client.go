@@ -9,8 +9,8 @@ import (
 
 type RedisClient struct {
 	events.EventEmitter
-	Client redis.UniversalClient
 
+	Client  redis.UniversalClient
 	Context context.Context
 }
 

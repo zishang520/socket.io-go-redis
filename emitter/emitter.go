@@ -3,118 +3,134 @@ package emitter
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 
+	"github.com/zishang520/engine.io/v2/log"
 	"github.com/zishang520/socket.io-go-redis/types"
+	"github.com/zishang520/socket.io/v2/adapter"
 	"github.com/zishang520/socket.io/v2/socket"
 )
 
+const UID adapter.ServerId = "emitter"
+
+var emitter_log = log.NewLog("socket.io-emitter")
+
 type Emitter struct {
-	redis            *types.RedisClient
+	redisClient *types.RedisClient
+
 	opts             *EmitterOptions
 	broadcastOptions *BroadcastOptions
+	nsp              string
 }
 
-func NewEmitter(redis *types.RedisClient, opts *EmitterOptions, nsps ...string) *Emitter {
-	e := &Emitter{}
-	e.redis = redis
+func MakeEmitter() *Emitter {
+	e := &Emitter{
+		opts: DefaultEmitterOptions(),
+		nsp:  "/",
+	}
+
+	return e
+}
+
+func NewEmitter(redisClient *types.RedisClient, opts *EmitterOptions, nsps ...string) *Emitter {
+	e := MakeEmitter()
+
+	e.Construct(redisClient, opts, nsps...)
+
+	return e
+}
+
+func (e *Emitter) Construct(redisClient *types.RedisClient, opts *EmitterOptions, nsps ...string) {
+	e.redisClient = redisClient
 
 	if opts == nil {
 		opts = DefaultEmitterOptions()
 	}
-	e.opts = opts
+	e.opts.Assign(opts)
 
-	nsp := "/"
-	if len(nsps) > 0 {
-		nsp = nsps[0]
-		if len(nsp) == 0 {
-			nsp = "/"
-		}
+	if len(nsps) > 0 && len(nsps[0]) > 0 {
+		e.nsp = nsps[0]
 	}
 
 	e.broadcastOptions = &BroadcastOptions{
-		Nsp:              nsp,
-		BroadcastChannel: e.opts.Key() + "#" + nsp + "#",
-		RequestChannel:   e.opts.Key() + "-request#" + nsp + "#",
+		Nsp:              e.nsp,
+		BroadcastChannel: e.opts.Key() + "#" + e.nsp + "#",
+		RequestChannel:   e.opts.Key() + "-request#" + e.nsp + "#",
 		Parser:           e.opts.Parser(),
 	}
-	return e
 }
 
 // Return a new emitter for the given namespace.
 func (e *Emitter) Of(nsp string) *Emitter {
-	if len(nsp) > 0 {
-		if nsp[0] != '/' {
-			nsp = "/" + nsp
-		}
-	} else {
-		nsp = "/"
+	if !strings.HasPrefix(nsp, "/") {
+		nsp = "/" + nsp
 	}
-	return NewEmitter(e.redis, e.opts, nsp)
+	return NewEmitter(e.redisClient, e.opts, nsp)
 }
 
 // Emits to all clients.
 func (e *Emitter) Emit(ev string, args ...any) error {
-	return NewBroadcastOperator(e.redis, e.broadcastOptions, nil, nil, nil).Emit(ev, args...)
+	return NewBroadcastOperator(e.redisClient, e.broadcastOptions, nil, nil, nil).Emit(ev, args...)
 }
 
 // Targets a room when emitting.
-func (e *Emitter) To(room ...socket.Room) *BroadcastOperator {
-	return NewBroadcastOperator(e.redis, e.broadcastOptions, nil, nil, nil).To(room...)
+func (e *Emitter) To(rooms ...socket.Room) *BroadcastOperator {
+	return NewBroadcastOperator(e.redisClient, e.broadcastOptions, nil, nil, nil).To(rooms...)
 }
 
 // Targets a room when emitting.
-func (e *Emitter) In(room ...socket.Room) *BroadcastOperator {
-	return NewBroadcastOperator(e.redis, e.broadcastOptions, nil, nil, nil).In(room...)
+func (e *Emitter) In(rooms ...socket.Room) *BroadcastOperator {
+	return NewBroadcastOperator(e.redisClient, e.broadcastOptions, nil, nil, nil).In(rooms...)
 }
 
 // Excludes a room when emitting.
-func (e *Emitter) Except(room ...socket.Room) *BroadcastOperator {
-	return NewBroadcastOperator(e.redis, e.broadcastOptions, nil, nil, nil).Except(room...)
+func (e *Emitter) Except(rooms ...socket.Room) *BroadcastOperator {
+	return NewBroadcastOperator(e.redisClient, e.broadcastOptions, nil, nil, nil).Except(rooms...)
 }
 
 // Sets a modifier for a subsequent event emission that the event data may be lost if the client is not ready to
 // receive messages (because of network slowness or other issues, or because they’re connected through long polling
 // and is in the middle of a request-response cycle).
 func (e *Emitter) Volatile() *BroadcastOperator {
-	return NewBroadcastOperator(e.redis, e.broadcastOptions, nil, nil, nil).Volatile()
+	return NewBroadcastOperator(e.redisClient, e.broadcastOptions, nil, nil, nil).Volatile()
 }
 
 // Sets the compress flag.
 //
 // compress - if `true`, compresses the sending data
 func (e *Emitter) Compress(compress bool) *BroadcastOperator {
-	return NewBroadcastOperator(e.redis, e.broadcastOptions, nil, nil, nil).Compress(compress)
+	return NewBroadcastOperator(e.redisClient, e.broadcastOptions, nil, nil, nil).Compress(compress)
 }
 
 // Makes the matching socket instances join the specified rooms
-func (e *Emitter) SocketsJoin(room ...socket.Room) {
-	NewBroadcastOperator(e.redis, e.broadcastOptions, nil, nil, nil).SocketsJoin(room...)
+func (e *Emitter) SocketsJoin(rooms ...socket.Room) error {
+	return NewBroadcastOperator(e.redisClient, e.broadcastOptions, nil, nil, nil).SocketsJoin(rooms...)
 }
 
 // Makes the matching socket instances leave the specified rooms
-func (e *Emitter) SocketsLeave(room ...socket.Room) {
-	NewBroadcastOperator(e.redis, e.broadcastOptions, nil, nil, nil).SocketsLeave(room...)
+func (e *Emitter) SocketsLeave(rooms ...socket.Room) error {
+	return NewBroadcastOperator(e.redisClient, e.broadcastOptions, nil, nil, nil).SocketsLeave(rooms...)
 }
 
 // Makes the matching socket instances disconnect
-func (e *Emitter) DisconnectSockets(state bool) {
-	NewBroadcastOperator(e.redis, e.broadcastOptions, nil, nil, nil).DisconnectSockets(state)
+func (e *Emitter) DisconnectSockets(state bool) error {
+	return NewBroadcastOperator(e.redisClient, e.broadcastOptions, nil, nil, nil).DisconnectSockets(state)
 }
 
 // Send a packet to the Socket.IO servers in the cluster
-//
-// args - any number of serializable arguments
-func (e *Emitter) ServerSideEmit(ev string, args ...any) error {
-	if _, withAck := args[len(args)-1].(func([]any, error)); withAck {
-		return errors.New("Acknowledgements are not supported")
+func (e *Emitter) ServerSideEmit(args ...any) error {
+	if len(args) > 0 {
+		if _, withAck := args[len(args)-1].(socket.Ack); withAck {
+			return errors.New("Acknowledgements are not supported")
+		}
 	}
-	request, err := json.Marshal(&ServerRequest{
+	request, err := json.Marshal(&ServerSideEmitMessage{
 		Uid:  UID,
-		Type: types.REQUEST_SERVER_SIDE_EMIT,
-		Data: append([]any{ev}, args...),
+		Type: types.SERVER_SIDE_EMIT,
+		Data: args,
 	})
 	if err != nil {
 		return err
 	}
-	return e.redis.Client.Publish(e.redis.Context, e.broadcastOptions.RequestChannel, request).Err()
+	return e.redisClient.Client.Publish(e.redisClient.Context, e.broadcastOptions.RequestChannel, request).Err()
 }

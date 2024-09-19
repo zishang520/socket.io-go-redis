@@ -7,17 +7,17 @@ import (
 
 type (
 	EmitterOptionsInterface interface {
-		SetKey(key string)
+		SetKey(string)
 		GetRawKey() *string
 		Key() string
 
-		SetParser(parser types.Parser)
+		SetParser(types.Parser)
 		GetRawParser() types.Parser
 		Parser() types.Parser
 	}
 
 	EmitterOptions struct {
-		// @default "socket.io"
+		// Default: "socket.io"
 		key *string
 
 		// The parser to use for encoding messages sent to Redis.
@@ -51,6 +51,8 @@ func (s *EmitterOptions) SetKey(key string) {
 func (s *EmitterOptions) GetRawKey() *string {
 	return s.key
 }
+
+// Default: "socket.io"
 func (s *EmitterOptions) Key() string {
 	if s.key == nil {
 		return "socket.io"
@@ -65,6 +67,9 @@ func (s *EmitterOptions) SetParser(parser types.Parser) {
 func (s *EmitterOptions) GetRawParser() types.Parser {
 	return s.parser
 }
+
+// The parser to use for encoding messages sent to Redis.
+// Defaults to msgpack, a MessagePack implementation.
 func (s *EmitterOptions) Parser() types.Parser {
 	if s.parser == nil {
 		return utils.MsgPack()

@@ -1,9 +1,12 @@
 package adapter
 
-import "github.com/zishang520/socket.io-go-redis/types"
+import (
+	"github.com/zishang520/socket.io-go-redis/types"
+	"github.com/zishang520/socket.io/v2/adapter"
+)
 
 type ShardedRedisAdapter interface {
-	ClusterAdapter
+	adapter.ClusterAdapter
 
 	SetRedis(*types.RedisClient)
 	SetOpts(*ShardedRedisAdapterOptions)

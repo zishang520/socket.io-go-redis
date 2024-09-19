@@ -1,89 +1,53 @@
 package adapter
 
 import (
+	"sync/atomic"
 	"time"
 
 	"github.com/zishang520/engine.io/v2/types"
 	"github.com/zishang520/engine.io/v2/utils"
 	"github.com/zishang520/socket.io-go-parser/v2/parser"
 	_types "github.com/zishang520/socket.io-go-redis/types"
+	"github.com/zishang520/socket.io/v2/adapter"
 	"github.com/zishang520/socket.io/v2/socket"
 )
 
 type (
-	AckRequest interface {
-		ClientCountCallback(uint64)
-		Ack([]any, error)
-	}
-
-	ackRequest struct {
-		clientCountCallback func(uint64)
-		ack                 func([]any, error)
-	}
-)
-
-func NewAckRequest(clientCountCallback func(uint64), ack func([]any, error)) AckRequest {
-	return &ackRequest{
-		clientCountCallback: clientCountCallback,
-		ack:                 ack,
-	}
-}
-
-func (a *ackRequest) ClientCountCallback(count uint64) {
-	if a.clientCountCallback != nil {
-		a.clientCountCallback(count)
-	}
-}
-
-func (a *ackRequest) Ack(packet []any, err error) {
-	if a.ack != nil {
-		a.ack(packet, err)
-	}
-}
-
-type (
 	Request struct {
-		Type _types.RequestType `json:"type,omitempty" mapstructure:"type,omitempty" msgpack:"type,omitempty"`
-
-		RequestId string                `json:"requestId,omitempty" mapstructure:"requestId,omitempty" msgpack:"requestId,omitempty"`
-		Rooms     []socket.Room         `json:"rooms,omitempty" mapstructure:"rooms,omitempty" msgpack:"rooms,omitempty"`
-		Opts      *_types.PacketOptions `json:"opts,omitempty" mapstructure:"opts,omitempty" msgpack:"opts,omitempty"`
-		Sid       socket.SocketId       `json:"sid,omitempty" mapstructure:"sid,omitempty" msgpack:"sid,omitempty"`
-		Room      socket.Room           `json:"room,omitempty" mapstructure:"room,omitempty" msgpack:"room,omitempty"`
-		Close     bool                  `json:"close,omitempty" mapstructure:"close,omitempty" msgpack:"close,omitempty"`
-		Uid       string                `json:"uid,omitempty" mapstructure:"uid,omitempty" msgpack:"uid,omitempty"`
-		Data      []any                 `json:"data,omitempty" mapstructure:"data,omitempty" msgpack:"data,omitempty"`
-		Packet    *parser.Packet        `json:"packet,omitempty" mapstructure:"packet,omitempty" msgpack:"packet,omitempty"`
+		Type      adapter.MessageType    `json:"type,omitempty" msgpack:"type,omitempty"`
+		RequestId string                 `json:"requestId,omitempty" msgpack:"requestId,omitempty"`
+		Rooms     []socket.Room          `json:"rooms,omitempty" msgpack:"rooms,omitempty"`
+		Opts      *adapter.PacketOptions `json:"opts,omitempty" msgpack:"opts,omitempty"`
+		Sid       socket.SocketId        `json:"sid,omitempty" msgpack:"sid,omitempty"`
+		Room      socket.Room            `json:"room,omitempty" msgpack:"room,omitempty"`
+		Close     bool                   `json:"close,omitempty" msgpack:"close,omitempty"`
+		Uid       adapter.ServerId       `json:"uid,omitempty" msgpack:"uid,omitempty"`
+		Data      []any                  `json:"data,omitempty" msgpack:"data,omitempty"`
+		Packet    *parser.Packet         `json:"packet,omitempty" msgpack:"packet,omitempty"`
 	}
 
-	SentRequest struct {
-		Type     _types.RequestType
-		Resolve  func(any, error)
-		Timeout  *utils.Timer
-		NumSub   int64
-		MsgCount int64
-
-		Rooms     []socket.Room
-		Sockets   []*ResponseSockets
-		Responses []any
+	RedisRequest struct {
+		Type      adapter.MessageType
+		Resolve   func(*types.Slice[any])
+		Timeout   *atomic.Pointer[utils.Timer]
+		NumSub    int64
+		MsgCount  *atomic.Int64
+		Rooms     *types.Set[socket.Room]
+		Sockets   *types.Slice[*adapter.SocketResponse]
+		Responses *types.Slice[any]
 	}
 
 	Response struct {
-		Type        _types.RequestType `json:"type,omitempty" mapstructure:"type,omitempty" msgpack:"type,omitempty"`
-		RequestId   string             `json:"requestId,omitempty" mapstructure:"requestId,omitempty" msgpack:"requestId,omitempty"`
-		Rooms       []socket.Room      `json:"rooms,omitempty" mapstructure:"rooms,omitempty" msgpack:"rooms,omitempty"`
-		Sockets     []*ResponseSockets `json:"sockets,omitempty" mapstructure:"sockets,omitempty" msgpack:"sockets,omitempty"`
-		Data        []any              `json:"data,omitempty" mapstructure:"data,omitempty" msgpack:"data,omitempty"`
-		ClientCount uint64             `json:"clientcount,omitempty" mapstructure:"clientcount,omitempty" msgpack:"clientcount,omitempty"`
-		Packet      []any              `json:"packet,omitempty" mapstructure:"packet,omitempty" msgpack:"packet,omitempty"`
+		Type        adapter.MessageType       `json:"type,omitempty" msgpack:"type,omitempty"`
+		RequestId   string                    `json:"requestId,omitempty" msgpack:"requestId,omitempty"`
+		Rooms       []socket.Room             `json:"rooms,omitempty" msgpack:"rooms,omitempty"`
+		Sockets     []*adapter.SocketResponse `json:"sockets,omitempty" msgpack:"sockets,omitempty"`
+		Data        []any                     `json:"data,omitempty" msgpack:"data,omitempty"`
+		ClientCount uint64                    `json:"clientcount,omitempty" msgpack:"clientcount,omitempty"`
+		Packet      []any                     `json:"packet,omitempty" msgpack:"packet,omitempty"`
 	}
 
-	ServerRequest struct {
-		RequestId string             `json:"requestId,omitempty" mapstructure:"requestId,omitempty" msgpack:"requestId,omitempty"`
-		Uid       string             `json:"uid,omitempty" mapstructure:"uid,omitempty" msgpack:"uid,omitempty"`
-		Type      _types.RequestType `json:"type,omitempty" mapstructure:"type,omitempty" msgpack:"type,omitempty"`
-		Data      []any              `json:"data,omitempty" mapstructure:"data,omitempty" msgpack:"data,omitempty"`
-	}
+	AckRequest = adapter.ClusterAckRequest
 
 	RedisAdapter interface {
 		socket.Adapter
@@ -91,7 +55,7 @@ type (
 		SetRedis(*_types.RedisClient)
 		SetOpts(*RedisAdapterOptions)
 
-		Uid() string
+		Uid() adapter.ServerId
 		RequestsTimeout() time.Duration
 		PublishOnSpecificResponseChannel() bool
 		Parser() _types.Parser

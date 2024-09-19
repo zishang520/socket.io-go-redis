@@ -34,7 +34,7 @@ func TestEmitterOptions(t *testing.T) {
 }
 
 func TestEmitter(t *testing.T) {
-	redisClient := types.NewRedisClient(context.Background(), redis.NewClient(&redis.Options{
+	redisClient := types.NewRedisClient(context.TODO(), redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Username: "",
 		Password: "",
@@ -98,7 +98,7 @@ func TestEmitter(t *testing.T) {
 }
 
 func TestBroadcastOperator(t *testing.T) {
-	redisClient := types.NewRedisClient(context.Background(), redis.NewClient(&redis.Options{
+	redisClient := types.NewRedisClient(context.TODO(), redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Username: "",
 		Password: "",

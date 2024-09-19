@@ -3,15 +3,12 @@ package adapter
 import (
 	"time"
 
-	"github.com/zishang520/engine.io/v2/utils"
-	"github.com/zishang520/socket.io-go-redis/types"
+	"github.com/zishang520/socket.io-go-redis/emitter"
 )
 
 type (
 	RedisAdapterOptionsInterface interface {
-		SetKey(string)
-		GetRawKey() *string
-		Key() string
+		emitter.EmitterOptionsInterface
 
 		SetRequestsTimeout(time.Duration)
 		GetRawRequestsTimeout() *time.Duration
@@ -20,20 +17,13 @@ type (
 		SetPublishOnSpecificResponseChannel(bool)
 		GetRawPublishOnSpecificResponseChannel() *bool
 		PublishOnSpecificResponseChannel() bool
-
-		SetParser(types.Parser)
-		GetRawParser() types.Parser
-		Parser() types.Parser
 	}
 
 	RedisAdapterOptions struct {
-
-		// the name of the key to pub/sub events on as prefix
-		// Default: "socket.io"
-		key *string
+		emitter.EmitterOptions
 
 		// after this timeout the adapter will stop waiting from responses to request
-		// Default: 5000
+		// Default: 5000 * time.Millisecond
 		requestsTimeout *time.Duration
 
 		// Whether to publish a response to the channel specific to the requesting node.
@@ -46,10 +36,6 @@ type (
 		//
 		// Default: false
 		publishOnSpecificResponseChannel *bool
-
-		// The parser to use for encoding and decoding messages sent to Redis.
-		// This option defaults to using `msgpack`, a MessagePack implementation.
-		parser types.Parser
 	}
 )
 
@@ -77,20 +63,6 @@ func (s *RedisAdapterOptions) Assign(data RedisAdapterOptionsInterface) (RedisAd
 	return s, nil
 }
 
-func (s *RedisAdapterOptions) SetKey(key string) {
-	s.key = &key
-}
-func (s *RedisAdapterOptions) GetRawKey() *string {
-	return s.key
-}
-func (s *RedisAdapterOptions) Key() string {
-	if s.key == nil {
-		return "socket.io"
-	}
-
-	return *s.key
-}
-
 func (s *RedisAdapterOptions) SetRequestsTimeout(requestsTimeout time.Duration) {
 	s.requestsTimeout = &requestsTimeout
 }
@@ -99,7 +71,7 @@ func (s *RedisAdapterOptions) GetRawRequestsTimeout() *time.Duration {
 }
 func (s *RedisAdapterOptions) RequestsTimeout() time.Duration {
 	if s.requestsTimeout == nil {
-		return time.Duration(5000 * time.Millisecond)
+		return 5000 * time.Millisecond
 	}
 
 	return *s.requestsTimeout
@@ -117,18 +89,4 @@ func (s *RedisAdapterOptions) PublishOnSpecificResponseChannel() bool {
 	}
 
 	return *s.publishOnSpecificResponseChannel
-}
-
-func (s *RedisAdapterOptions) SetParser(parser types.Parser) {
-	s.parser = parser
-}
-func (s *RedisAdapterOptions) GetRawParser() types.Parser {
-	return s.parser
-}
-func (s *RedisAdapterOptions) Parser() types.Parser {
-	if s.parser == nil {
-		return utils.MsgPack()
-	}
-
-	return s.parser
 }

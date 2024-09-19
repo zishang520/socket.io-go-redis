@@ -1,18 +1,16 @@
 package adapter
 
 type (
-	subMode struct {
-		name string
-	}
+	subscriptionMode string
 
 	ShardedRedisAdapterOptionsInterface interface {
 		SetChannelPrefix(string)
 		GetRawChannelPrefix() *string
 		ChannelPrefix() string
 
-		SetSubscriptionMode(subMode)
-		GetRawSubscriptionMode() *subMode
-		SubscriptionMode() subMode
+		SetSubscriptionMode(subscriptionMode)
+		GetRawSubscriptionMode() *subscriptionMode
+		SubscriptionMode() subscriptionMode
 	}
 
 	ShardedRedisAdapterOptions struct {
@@ -23,27 +21,32 @@ type (
 
 		// The subscription mode impacts the number of Redis Pub/Sub channels:
 		//
-		// - StaticSubscriptionMode: 2 channels per namespace
+		// - [adapter.StaticSubscriptionMode]: 2 channels per namespace
 		//
 		// Useful when used with dynamic namespaces.
 		//
-		// - DynamicSubscriptionMode: (2 + 1 per public room) channels per namespace
+		// - [adapter.DynamicSubscriptionMode]: (2 + 1 per public room) channels per namespace
 		//
 		// The default value, useful when some rooms have a low number of clients (so only a few Socket.IO servers are notified).
 		//
 		// Only public rooms (i.e. not related to a particular Socket ID) are taken in account, because:
-		//
 		// - a lot of connected clients would mean a lot of subscription/unsubscription
 		// - the Socket ID attribute is ephemeral
 		//
-		// Default: DynamicSubscriptionMode
-		subscriptionMode *subMode
+		// - [adapter.DynamicPrivateSubscriptionMode]
+		//
+		// Like [adapter.DynamicPrivateSubscriptionMode] but creates separate channels for private rooms as well. Useful when there is lots of 1:1 communication
+		// via socket.Emit() calls.
+		//
+		// Default [adapter.DynamicSubscriptionMode]
+		subscriptionMode *subscriptionMode
 	}
 )
 
-var (
-	StaticSubscriptionMode  subMode = subMode{"static"}
-	DynamicSubscriptionMode subMode = subMode{"dynamic"}
+const (
+	StaticSubscriptionMode         subscriptionMode = "static"
+	DynamicSubscriptionMode        subscriptionMode = "dynamic"
+	DynamicPrivateSubscriptionMode subscriptionMode = "dynamic-private"
 )
 
 func DefaultShardedRedisAdapterOptions() *ShardedRedisAdapterOptions {
@@ -79,13 +82,13 @@ func (s *ShardedRedisAdapterOptions) ChannelPrefix() string {
 	return *s.channelPrefix
 }
 
-func (s *ShardedRedisAdapterOptions) SetSubscriptionMode(subMode subMode) {
-	s.subscriptionMode = &subMode
+func (s *ShardedRedisAdapterOptions) SetSubscriptionMode(subscriptionMode subscriptionMode) {
+	s.subscriptionMode = &subscriptionMode
 }
-func (s *ShardedRedisAdapterOptions) GetRawSubscriptionMode() *subMode {
+func (s *ShardedRedisAdapterOptions) GetRawSubscriptionMode() *subscriptionMode {
 	return s.subscriptionMode
 }
-func (s *ShardedRedisAdapterOptions) SubscriptionMode() subMode {
+func (s *ShardedRedisAdapterOptions) SubscriptionMode() subscriptionMode {
 	if s.subscriptionMode == nil {
 		return DynamicSubscriptionMode
 	}
