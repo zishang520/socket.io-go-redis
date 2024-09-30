@@ -31,7 +31,7 @@ type (
 		// a Redis client
 		Redis *_types.RedisClient
 		// additional options
-		Opts *RedisAdapterOptions
+		Opts RedisAdapterOptionsInterface
 	}
 
 	redisAdapter struct {
@@ -78,7 +78,7 @@ func MakeRedisAdapter() RedisAdapter {
 	return c
 }
 
-func NewRedisAdapter(nsp socket.Namespace, redis *_types.RedisClient, opts *RedisAdapterOptions) RedisAdapter {
+func NewRedisAdapter(nsp socket.Namespace, redis *_types.RedisClient, opts any) RedisAdapter {
 	c := MakeRedisAdapter()
 
 	c.SetRedis(redis)
@@ -93,11 +93,10 @@ func (r *redisAdapter) SetRedis(redis *_types.RedisClient) {
 	r.redisClient = redis
 }
 
-func (r *redisAdapter) SetOpts(opts *RedisAdapterOptions) {
-	if opts == nil {
-		opts = DefaultRedisAdapterOptions()
+func (r *redisAdapter) SetOpts(opts any) {
+	if options, ok := opts.(RedisAdapterOptionsInterface); ok {
+		r.opts.Assign(options)
 	}
-	r.opts.Assign(opts)
 }
 
 // readonly

@@ -9,5 +9,5 @@ type ShardedRedisAdapter interface {
 	adapter.ClusterAdapter
 
 	SetRedis(*types.RedisClient)
-	SetOpts(*ShardedRedisAdapterOptions)
+	SetOpts(any)
 }
