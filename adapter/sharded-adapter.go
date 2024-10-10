@@ -2,6 +2,7 @@ package adapter
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
@@ -21,7 +22,7 @@ type ShardedRedisAdapterBuilder struct {
 	// the Redis client used to publish/subscribe
 	Redis *_types.RedisClient
 	// some additional options
-	Opts *ShardedRedisAdapterOptions
+	Opts ShardedRedisAdapterOptionsInterface
 }
 
 func (sb *ShardedRedisAdapterBuilder) New(nsp socket.Namespace) socket.Adapter {
@@ -50,7 +51,7 @@ func MakeShardedRedisAdapter() ShardedRedisAdapter {
 	return c
 }
 
-func NewShardedRedisAdapter(nsp socket.Namespace, redis *_types.RedisClient, opts *ShardedRedisAdapterOptions) ShardedRedisAdapter {
+func NewShardedRedisAdapter(nsp socket.Namespace, redis *_types.RedisClient, opts any) ShardedRedisAdapter {
 	c := MakeShardedRedisAdapter()
 
 	c.SetRedis(redis)
@@ -65,11 +66,10 @@ func (s *shardedRedisAdapter) SetRedis(redisClient *_types.RedisClient) {
 	s.redisClient = redisClient
 }
 
-func (s *shardedRedisAdapter) SetOpts(opts *ShardedRedisAdapterOptions) {
-	if opts == nil {
-		opts = DefaultShardedRedisAdapterOptions()
+func (s *shardedRedisAdapter) SetOpts(opts any) {
+	if options, ok := opts.(ShardedRedisAdapterOptionsInterface); ok {
+		s.opts.Assign(options)
 	}
-	s.opts.Assign(opts)
 }
 
 func (s *shardedRedisAdapter) Construct(nsp socket.Namespace) {
@@ -200,58 +200,24 @@ func (s *shardedRedisAdapter) encode(message *adapter.ClusterMessage) ([]byte, e
 }
 
 func (s *shardedRedisAdapter) onRawMessage(rawMessage []byte, channel string) {
+	// Prepare the structure to hold the decoded message
 	var message *adapter.ClusterResponse
+	var err error
 
-	if rawMessage[0] == 0x7b {
-		var rawMsg struct {
-			Uid  adapter.ServerId    `json:"uid,omitempty" msgpack:"uid,omitempty"`
-			Nsp  string              `json:"nsp,omitempty" msgpack:"nsp,omitempty"`
-			Type adapter.MessageType `json:"type,omitempty" msgpack:"type,omitempty"`
-			Data json.RawMessage     `json:"data,omitempty" msgpack:"data,omitempty"` // Data will hold the specific message data for different types
-		}
-		if err := json.Unmarshal(rawMessage, &rawMsg); err != nil {
-			redis_log.Debug("invalid JSON format: %s", err.Error())
-			return
-		}
-
-		message = &adapter.ClusterResponse{
-			Uid:  rawMsg.Uid,
-			Nsp:  rawMsg.Nsp,
-			Type: rawMsg.Type,
-		}
-
-		if data, err := s.decodeData(rawMsg.Type, rawMsg.Data); err != nil {
-			redis_log.Debug("invalid data format: %s", err.Error())
-			return
-		} else {
-			message.Data = data
-		}
-	} else {
-		var rawMsg struct {
-			Uid  adapter.ServerId    `json:"uid,omitempty" msgpack:"uid,omitempty"`
-			Nsp  string              `json:"nsp,omitempty" msgpack:"nsp,omitempty"`
-			Type adapter.MessageType `json:"type,omitempty" msgpack:"type,omitempty"`
-			Data msgpack.RawMessage  `json:"data,omitempty" msgpack:"data,omitempty"` // Data will hold the specific message data for different types
-		}
-		if err := utils.MsgPack().Decode(rawMessage, &rawMsg); err != nil {
-			redis_log.Debug("invalid MessagePack format: %s", err.Error())
-			return
-		}
-
-		message = &adapter.ClusterResponse{
-			Uid:  rawMsg.Uid,
-			Nsp:  rawMsg.Nsp,
-			Type: rawMsg.Type,
-		}
-
-		if data, err := s.decodeData(rawMsg.Type, rawMsg.Data); err != nil {
-			redis_log.Debug("invalid data format: %s", err.Error())
-			return
-		} else {
-			message.Data = data
-		}
+	// Check the message format based on the first byte
+	if rawMessage[0] == '{' { // JSON format
+		message, err = s.decodeClusterMessageJSON(rawMessage)
+	} else { // MessagePack format
+		message, err = s.decodeClusterMessageMsgPack(rawMessage)
 	}
 
+	// If an error occurred during decoding, log and exit
+	if err != nil {
+		redis_log.Debug("invalid message format: %s", err.Error())
+		return
+	}
+
+	// Handle the message based on the channel type
 	if channel == s.responseChannel {
 		s.OnResponse(message)
 	} else {
@@ -259,9 +225,63 @@ func (s *shardedRedisAdapter) onRawMessage(rawMessage []byte, channel string) {
 	}
 }
 
-func (s *shardedRedisAdapter) decodeData(messageType adapter.MessageType, rawData any) (any, error) {
-	var target any
+// Decode ClusterMessage in JSON format
+func (s *shardedRedisAdapter) decodeClusterMessageJSON(rawMessage []byte) (*adapter.ClusterResponse, error) {
+	var rawMsg struct {
+		Uid  adapter.ServerId    `json:"uid,omitempty" msgpack:"uid,omitempty"`
+		Nsp  string              `json:"nsp,omitempty" msgpack:"nsp,omitempty"`
+		Type adapter.MessageType `json:"type,omitempty" msgpack:"type,omitempty"`
+		Data json.RawMessage     `json:"data,omitempty" msgpack:"data,omitempty"`
+	}
 
+	// Attempt to unmarshal the JSON data
+	if err := json.Unmarshal(rawMessage, &rawMsg); err != nil {
+		return nil, fmt.Errorf("invalid JSON format: %w", err)
+	}
+
+	// Decode the message data and populate the ClusterResponse
+	return s.buildClusterResponse(rawMsg.Uid, rawMsg.Nsp, rawMsg.Type, rawMsg.Data)
+}
+
+// Decode ClusterMessage in MessagePack format
+func (s *shardedRedisAdapter) decodeClusterMessageMsgPack(rawMessage []byte) (*adapter.ClusterResponse, error) {
+	var rawMsg struct {
+		Uid  adapter.ServerId    `json:"uid,omitempty" msgpack:"uid,omitempty"`
+		Nsp  string              `json:"nsp,omitempty" msgpack:"nsp,omitempty"`
+		Type adapter.MessageType `json:"type,omitempty" msgpack:"type,omitempty"`
+		Data msgpack.RawMessage  `json:"data,omitempty" msgpack:"data,omitempty"`
+	}
+
+	// Attempt to decode the MessagePack data
+	if err := utils.MsgPack().Decode(rawMessage, &rawMsg); err != nil {
+		return nil, fmt.Errorf("invalid MessagePack format: %w", err)
+	}
+
+	// Decode the message data and populate the ClusterResponse
+	return s.buildClusterResponse(rawMsg.Uid, rawMsg.Nsp, rawMsg.Type, rawMsg.Data)
+}
+
+// Helper method to build ClusterResponse from the raw data
+func (s *shardedRedisAdapter) buildClusterResponse(uid adapter.ServerId, nsp string, messageType adapter.MessageType, rawData any) (*adapter.ClusterResponse, error) {
+	message := &adapter.ClusterResponse{
+		Uid:  uid,
+		Nsp:  nsp,
+		Type: messageType,
+	}
+
+	// Decode the specific message data based on the message type
+	data, err := s.decodeData(messageType, rawData)
+	if err != nil {
+		return nil, fmt.Errorf("invalid data format: %w", err)
+	}
+
+	message.Data = data
+	return message, nil
+}
+
+func (s *shardedRedisAdapter) decodeData(messageType adapter.MessageType, rawData any) (any, error) {
+	// Pre-allocate the target message structure based on the message type
+	var target any
 	switch messageType {
 	case adapter.INITIAL_HEARTBEAT, adapter.HEARTBEAT, adapter.ADAPTER_CLOSE:
 		return nil, nil
@@ -287,17 +307,18 @@ func (s *shardedRedisAdapter) decodeData(messageType adapter.MessageType, rawDat
 		return nil, fmt.Errorf("unknown message type: %v", messageType)
 	}
 
+	// Decode data based on the format (JSON or MessagePack)
 	switch raw := rawData.(type) {
 	case json.RawMessage:
 		if err := json.Unmarshal(raw, &target); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("JSON decoding failed: %w", err)
 		}
 	case msgpack.RawMessage:
 		if err := utils.MsgPack().Decode(raw, &target); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("MessagePack decoding failed: %w", err)
 		}
 	default:
-		return nil, fmt.Errorf("unsupported data format")
+		return nil, errors.New("unsupported data format")
 	}
 
 	return target, nil

@@ -53,7 +53,7 @@ type (
 		socket.Adapter
 
 		SetRedis(*_types.RedisClient)
-		SetOpts(*RedisAdapterOptions)
+		SetOpts(any)
 
 		Uid() adapter.ServerId
 		RequestsTimeout() time.Duration
