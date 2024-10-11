@@ -37,7 +37,7 @@ func TestEmitter(t *testing.T) {
 	redisClient := types.NewRedisClient(context.TODO(), redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Username: "",
-		Password: "",
+		Password: "root",
 		DB:       0,
 	}))
 
@@ -101,7 +101,7 @@ func TestBroadcastOperator(t *testing.T) {
 	redisClient := types.NewRedisClient(context.TODO(), redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Username: "",
-		Password: "",
+		Password: "root",
 		DB:       0,
 	}))
 
@@ -114,7 +114,7 @@ func TestBroadcastOperator(t *testing.T) {
 
 	t.Run("Emit", func(t *testing.T) {
 		if err := b.Emit("test", "data", "data"); err != nil {
-			t.Fatal(`emit.Emit() value must be nil`)
+			t.Fatalf(`emit.Emit() value must be nil: %v`, err)
 		}
 	})
 

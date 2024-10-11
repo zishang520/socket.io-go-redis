@@ -209,7 +209,7 @@ func (r *redisAdapter) onMessage(pattern string, channel string, msg []byte) {
 		return
 	}
 
-	var packet *_types.Packet
+	var packet *Packet
 	if err := r.parser.Decode(msg, &packet); err != nil {
 		redis_log.Debug("error decoding message: %v", err)
 		return
@@ -581,7 +581,7 @@ func (r *redisAdapter) Broadcast(packet *parser.Packet, opts *socket.BroadcastOp
 	onlyLocal := opts != nil && opts.Flags != nil && opts.Flags.Local
 
 	if !onlyLocal {
-		if msg, err := r.parser.Encode(&_types.Packet{
+		if msg, err := r.parser.Encode(&Packet{
 			Uid:    r.Uid(),
 			Packet: packet,
 			Opts:   adapter.EncodeOptions(opts),

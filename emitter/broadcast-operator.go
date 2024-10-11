@@ -126,7 +126,7 @@ func (b *BroadcastOperator) Emit(ev string, args ...any) error {
 		Flags:  b.flags,
 	}
 
-	msg, err := b.broadcastOptions.Parser.Encode(&_types.Packet{
+	msg, err := b.broadcastOptions.Parser.Encode(&Packet{
 		Uid:    UID,
 		Packet: packet,
 		Opts:   opts,
@@ -150,7 +150,7 @@ func (b *BroadcastOperator) Emit(ev string, args ...any) error {
 
 // Makes the matching socket instances join the specified rooms
 func (b *BroadcastOperator) SocketsJoin(rooms ...socket.Room) error {
-	request, err := json.Marshal(&EmitMessage{
+	request, err := json.Marshal(&Request{
 		Type: _types.REMOTE_JOIN,
 		Opts: &adapter.PacketOptions{
 			Rooms:  b.rooms.Keys(),
@@ -167,7 +167,7 @@ func (b *BroadcastOperator) SocketsJoin(rooms ...socket.Room) error {
 
 // Makes the matching socket instances leave the specified rooms
 func (b *BroadcastOperator) SocketsLeave(rooms ...socket.Room) error {
-	request, err := json.Marshal(&EmitMessage{
+	request, err := json.Marshal(&Request{
 		Type: _types.REMOTE_LEAVE,
 		Opts: &adapter.PacketOptions{
 			Rooms:  b.rooms.Keys(),
@@ -184,7 +184,7 @@ func (b *BroadcastOperator) SocketsLeave(rooms ...socket.Room) error {
 
 // Makes the matching socket instances disconnect
 func (b *BroadcastOperator) DisconnectSockets(state bool) error {
-	request, err := json.Marshal(&EmitMessage{
+	request, err := json.Marshal(&Request{
 		Type: _types.REMOTE_DISCONNECT,
 		Opts: &adapter.PacketOptions{
 			Rooms:  b.rooms.Keys(),
