@@ -5,9 +5,9 @@ go 1.24.1
 require (
 	github.com/redis/go-redis/v9 v9.7.1
 	github.com/vmihailenco/msgpack/v5 v5.4.1
-	github.com/zishang520/engine.io/v2 v2.4.3
-	github.com/zishang520/socket.io-go-parser/v2 v2.4.1
-	github.com/zishang520/socket.io/v2 v2.4.1
+	github.com/zishang520/engine.io/v2 v2.4.4
+	github.com/zishang520/socket.io-go-parser/v2 v2.4.2
+	github.com/zishang520/socket.io/v2 v2.4.2
 )
 
 require (
