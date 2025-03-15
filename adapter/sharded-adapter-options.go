@@ -57,11 +57,11 @@ func (s *ShardedRedisAdapterOptions) Assign(data ShardedRedisAdapterOptionsInter
 	if data == nil {
 		return s, nil
 	}
-	if s.GetRawChannelPrefix() == nil {
+	if data.GetRawChannelPrefix() != nil {
 		s.SetChannelPrefix(data.ChannelPrefix())
 	}
 
-	if s.GetRawSubscriptionMode() == nil {
+	if data.GetRawSubscriptionMode() != nil {
 		s.SetSubscriptionMode(data.SubscriptionMode())
 	}
 

@@ -47,16 +47,16 @@ func (s *RedisAdapterOptions) Assign(data RedisAdapterOptionsInterface) (RedisAd
 	if data == nil {
 		return s, nil
 	}
-	if s.GetRawKey() == nil {
+	if data.GetRawKey() != nil {
 		s.SetKey(data.Key())
 	}
-	if s.GetRawRequestsTimeout() == nil {
+	if data.GetRawRequestsTimeout() != nil {
 		s.SetRequestsTimeout(data.RequestsTimeout())
 	}
-	if s.GetRawPublishOnSpecificResponseChannel() == nil {
+	if data.GetRawPublishOnSpecificResponseChannel() != nil {
 		s.SetPublishOnSpecificResponseChannel(data.PublishOnSpecificResponseChannel())
 	}
-	if s.GetRawParser() == nil {
+	if data.GetRawParser() != nil {
 		s.SetParser(data.Parser())
 	}
 

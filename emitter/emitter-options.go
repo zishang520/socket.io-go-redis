@@ -35,10 +35,10 @@ func (s *EmitterOptions) Assign(data EmitterOptionsInterface) (EmitterOptionsInt
 		return s, nil
 	}
 
-	if s.GetRawKey() == nil {
+	if data.GetRawKey() != nil {
 		s.SetKey(data.Key())
 	}
-	if s.GetRawParser() == nil {
+	if data.GetRawParser() != nil {
 		s.SetParser(data.Parser())
 	}
 

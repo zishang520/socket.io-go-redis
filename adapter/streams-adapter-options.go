@@ -56,23 +56,23 @@ func (s *RedisStreamsAdapterOptions) Assign(data RedisStreamsAdapterOptionsInter
 	if data == nil {
 		return s, nil
 	}
-	if s.GetRawHeartbeatInterval() == nil {
+	if data.GetRawHeartbeatInterval() != nil {
 		s.SetHeartbeatInterval(data.HeartbeatInterval())
 	}
-	if s.GetRawHeartbeatTimeout() == nil {
+	if data.GetRawHeartbeatTimeout() != nil {
 		s.SetHeartbeatTimeout(data.HeartbeatTimeout())
 	}
 
-	if s.GetRawStreamName() == nil {
+	if data.GetRawStreamName() != nil {
 		s.SetStreamName(data.StreamName())
 	}
-	if s.GetRawMaxLen() == nil {
+	if data.GetRawMaxLen() != nil {
 		s.SetMaxLen(data.MaxLen())
 	}
-	if s.GetRawReadCount() == nil {
+	if data.GetRawReadCount() != nil {
 		s.SetReadCount(data.ReadCount())
 	}
-	if s.GetRawSessionKeyPrefix() == nil {
+	if data.GetRawSessionKeyPrefix() != nil {
 		s.SetSessionKeyPrefix(data.SessionKeyPrefix())
 	}
 
