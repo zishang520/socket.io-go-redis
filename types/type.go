@@ -44,5 +44,14 @@ type (
 
 	Map[Tkey comparable, TValue any] = types.Map[Tkey, TValue]
 	Set[TValue comparable]           = types.Set[TValue]
+	Slice[TValue any]                = types.Slice[TValue]
 	Callable                         = types.Callable
 )
+
+func NewSet[KType comparable](keys ...KType) *Set[KType] {
+	return types.NewSet(keys...)
+}
+
+func NewSlice[T any](elements ...T) *Slice[T] {
+	return types.NewSlice(elements...)
+}

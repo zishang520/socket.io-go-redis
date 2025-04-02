@@ -17,16 +17,16 @@ import (
     "syscall"
 
     "github.com/redis/go-redis/v9"
-    "github.com/zishang520/engine.io/v2/types"
+    s "github.com/zishang520/engine.io/v2/types"
     "github.com/zishang520/socket.io-go-redis/adapter"
-    r_types "github.com/zishang520/socket.io-go-redis/types"
+    "github.com/zishang520/socket.io-go-redis/types"
     "github.com/zishang520/socket.io/v2/socket"
     // "github.com/zishang520/socket.io-go-redis/emitter"
 )
 
 func main() {
 
-    redisClient := r_types.NewRedisClient(context.TODO(), redis.NewClient(&redis.Options{
+    redisClient := types.NewRedisClient(context.TODO(), redis.NewClient(&redis.Options{
         Addr:     "127.0.0.1:6379",
         Username: "",
         Password: "",
@@ -42,7 +42,7 @@ func main() {
         Redis: redisClient,
         Opts:  &adapter.RedisAdapterOptions{},
     })
-    httpServer := types.CreateServer(nil)
+    httpServer := s.CreateServer(nil)
     io := socket.NewServer(httpServer, config)
     io.On("connection", func(clients ...any) {
         client := clients[0].(*socket.Socket)

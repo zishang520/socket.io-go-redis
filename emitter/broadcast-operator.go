@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/zishang520/engine.io/v2/types"
 	"github.com/zishang520/socket.io-go-parser/v2/parser"
-	_types "github.com/zishang520/socket.io-go-redis/types"
+	"github.com/zishang520/socket.io-go-redis/types"
 	"github.com/zishang520/socket.io/v2/adapter"
 	"github.com/zishang520/socket.io/v2/socket"
 )
@@ -22,7 +21,7 @@ var RESERVED_EVENTS = types.NewSet(
 )
 
 type BroadcastOperator struct {
-	redisClient      *_types.RedisClient
+	redisClient      *types.RedisClient
 	broadcastOptions *BroadcastOptions
 	rooms            *types.Set[socket.Room]
 	exceptRooms      *types.Set[socket.Room]
@@ -39,7 +38,7 @@ func MakeBroadcastOperator() *BroadcastOperator {
 	return b
 }
 
-func NewBroadcastOperator(redisClient *_types.RedisClient, broadcastOptions *BroadcastOptions, rooms *types.Set[socket.Room], exceptRooms *types.Set[socket.Room], flags *socket.BroadcastFlags) *BroadcastOperator {
+func NewBroadcastOperator(redisClient *types.RedisClient, broadcastOptions *BroadcastOptions, rooms *types.Set[socket.Room], exceptRooms *types.Set[socket.Room], flags *socket.BroadcastFlags) *BroadcastOperator {
 	b := MakeBroadcastOperator()
 
 	b.Construct(redisClient, broadcastOptions, rooms, exceptRooms, flags)
@@ -47,7 +46,7 @@ func NewBroadcastOperator(redisClient *_types.RedisClient, broadcastOptions *Bro
 	return b
 }
 
-func (b *BroadcastOperator) Construct(redisClient *_types.RedisClient, broadcastOptions *BroadcastOptions, rooms *types.Set[socket.Room], exceptRooms *types.Set[socket.Room], flags *socket.BroadcastFlags) {
+func (b *BroadcastOperator) Construct(redisClient *types.RedisClient, broadcastOptions *BroadcastOptions, rooms *types.Set[socket.Room], exceptRooms *types.Set[socket.Room], flags *socket.BroadcastFlags) {
 	b.redisClient = redisClient
 
 	if broadcastOptions == nil {
@@ -151,7 +150,7 @@ func (b *BroadcastOperator) Emit(ev string, args ...any) error {
 // Makes the matching socket instances join the specified rooms
 func (b *BroadcastOperator) SocketsJoin(rooms ...socket.Room) error {
 	request, err := json.Marshal(&Request{
-		Type: _types.REMOTE_JOIN,
+		Type: types.REMOTE_JOIN,
 		Opts: &adapter.PacketOptions{
 			Rooms:  b.rooms.Keys(),
 			Except: b.exceptRooms.Keys(),
@@ -168,7 +167,7 @@ func (b *BroadcastOperator) SocketsJoin(rooms ...socket.Room) error {
 // Makes the matching socket instances leave the specified rooms
 func (b *BroadcastOperator) SocketsLeave(rooms ...socket.Room) error {
 	request, err := json.Marshal(&Request{
-		Type: _types.REMOTE_LEAVE,
+		Type: types.REMOTE_LEAVE,
 		Opts: &adapter.PacketOptions{
 			Rooms:  b.rooms.Keys(),
 			Except: b.exceptRooms.Keys(),
@@ -185,7 +184,7 @@ func (b *BroadcastOperator) SocketsLeave(rooms ...socket.Room) error {
 // Makes the matching socket instances disconnect
 func (b *BroadcastOperator) DisconnectSockets(state bool) error {
 	request, err := json.Marshal(&Request{
-		Type: _types.REMOTE_DISCONNECT,
+		Type: types.REMOTE_DISCONNECT,
 		Opts: &adapter.PacketOptions{
 			Rooms:  b.rooms.Keys(),
 			Except: b.exceptRooms.Keys(),
