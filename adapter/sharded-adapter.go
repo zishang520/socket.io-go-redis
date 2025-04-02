@@ -7,10 +7,9 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/vmihailenco/msgpack/v5"
-	"github.com/zishang520/engine.io/v2/types"
 	"github.com/zishang520/engine.io/v2/utils"
 	"github.com/zishang520/socket.io-go-parser/v2/parser"
-	_types "github.com/zishang520/socket.io-go-redis/types"
+	"github.com/zishang520/socket.io-go-redis/types"
 	"github.com/zishang520/socket.io/v2/adapter"
 	"github.com/zishang520/socket.io/v2/socket"
 )
@@ -20,7 +19,7 @@ import (
 // See: https://redis.io/docs/manual/pubsub/#sharded-pubsub
 type ShardedRedisAdapterBuilder struct {
 	// the Redis client used to publish/subscribe
-	Redis *_types.RedisClient
+	Redis *types.RedisClient
 	// some additional options
 	Opts ShardedRedisAdapterOptionsInterface
 }
@@ -33,7 +32,7 @@ type shardedRedisAdapter struct {
 	adapter.ClusterAdapter
 
 	pubSubClient    *redis.PubSub
-	redisClient     *_types.RedisClient
+	redisClient     *types.RedisClient
 	opts            *ShardedRedisAdapterOptions
 	channel         string
 	responseChannel string
@@ -51,7 +50,7 @@ func MakeShardedRedisAdapter() ShardedRedisAdapter {
 	return c
 }
 
-func NewShardedRedisAdapter(nsp socket.Namespace, redis *_types.RedisClient, opts any) ShardedRedisAdapter {
+func NewShardedRedisAdapter(nsp socket.Namespace, redis *types.RedisClient, opts any) ShardedRedisAdapter {
 	c := MakeShardedRedisAdapter()
 
 	c.SetRedis(redis)
@@ -62,7 +61,7 @@ func NewShardedRedisAdapter(nsp socket.Namespace, redis *_types.RedisClient, opt
 	return c
 }
 
-func (s *shardedRedisAdapter) SetRedis(redisClient *_types.RedisClient) {
+func (s *shardedRedisAdapter) SetRedis(redisClient *types.RedisClient) {
 	s.redisClient = redisClient
 }
 
@@ -74,6 +73,14 @@ func (s *shardedRedisAdapter) SetOpts(opts any) {
 
 func (s *shardedRedisAdapter) Construct(nsp socket.Namespace) {
 	s.ClusterAdapter.Construct(nsp)
+
+	if s.opts.GetRawChannelPrefix() == nil {
+		s.opts.SetChannelPrefix("socket.io")
+	}
+
+	if s.opts.GetRawSubscriptionMode() == nil {
+		s.opts.SetSubscriptionMode(DynamicSubscriptionMode)
+	}
 
 	s.channel = s.opts.ChannelPrefix() + "#" + nsp.Name() + "#"
 	s.responseChannel = s.opts.ChannelPrefix() + "#" + nsp.Name() + "#" + string(s.Uid()) + "#"

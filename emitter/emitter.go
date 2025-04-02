@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/zishang520/engine.io/v2/log"
+	"github.com/zishang520/engine.io/v2/utils"
 	"github.com/zishang520/socket.io-go-redis/types"
 	"github.com/zishang520/socket.io/v2/adapter"
 	"github.com/zishang520/socket.io/v2/socket"
@@ -47,6 +48,14 @@ func (e *Emitter) Construct(redisClient *types.RedisClient, opts *EmitterOptions
 		opts = DefaultEmitterOptions()
 	}
 	e.opts.Assign(opts)
+
+	if e.opts.GetRawKey() == nil {
+		e.opts.SetKey("socket.io")
+	}
+
+	if e.opts.GetRawParser() == nil {
+		e.opts.SetParser(utils.MsgPack())
+	}
 
 	if len(nsps) > 0 && len(nsps[0]) > 0 {
 		e.nsp = nsps[0]

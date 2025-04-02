@@ -1,6 +1,7 @@
 package types
 
 import (
+	"github.com/zishang520/engine.io/v2/types"
 	"github.com/zishang520/socket.io-go-parser/v2/parser"
 	"github.com/zishang520/socket.io/v2/adapter"
 	"github.com/zishang520/socket.io/v2/socket"
@@ -40,4 +41,8 @@ type (
 		Encode(any) ([]byte, error)
 		Decode([]byte, any) error
 	}
+
+	Map[Tkey comparable, TValue any] = types.Map[Tkey, TValue]
+	Set[TValue comparable]           = types.Set[TValue]
+	Callable                         = types.Callable
 )

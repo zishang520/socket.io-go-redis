@@ -125,11 +125,22 @@ func (r *redisAdapter) Construct(nsp socket.Namespace) {
 
 	uid, _ := adapter.Uid2(6)
 	r.uid = adapter.ServerId(uid)
-	r.requestsTimeout = r.opts.RequestsTimeout()
+	if r.opts.GetRawRequestsTimeout() != nil {
+		r.requestsTimeout = r.opts.RequestsTimeout()
+	} else {
+		r.requestsTimeout = 5_000 * time.Millisecond
+	}
 	r.publishOnSpecificResponseChannel = r.opts.PublishOnSpecificResponseChannel()
-	r.parser = r.opts.Parser()
+	if r.opts.GetRawParser() != nil {
+		r.parser = r.opts.Parser()
+	} else {
+		r.parser = utils.MsgPack()
+	}
 
-	prefix := r.opts.Key()
+	prefix := "socket.io"
+	if r.opts.GetRawKey() != nil {
+		prefix = r.opts.Key()
+	}
 
 	r.channel = prefix + "#" + nsp.Name() + "#"
 	r.requestChannel = prefix + "-request#" + r.Nsp().Name() + "#"

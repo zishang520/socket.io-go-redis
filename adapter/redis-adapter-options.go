@@ -47,17 +47,14 @@ func (s *RedisAdapterOptions) Assign(data RedisAdapterOptionsInterface) RedisAda
 	if data == nil {
 		return s
 	}
-	if data.GetRawKey() != nil {
-		s.SetKey(data.Key())
-	}
+
+	s.EmitterOptions.Assign(data)
+
 	if data.GetRawRequestsTimeout() != nil {
 		s.SetRequestsTimeout(data.RequestsTimeout())
 	}
 	if data.GetRawPublishOnSpecificResponseChannel() != nil {
 		s.SetPublishOnSpecificResponseChannel(data.PublishOnSpecificResponseChannel())
-	}
-	if data.GetRawParser() != nil {
-		s.SetParser(data.Parser())
 	}
 
 	return s
@@ -71,7 +68,7 @@ func (s *RedisAdapterOptions) GetRawRequestsTimeout() *time.Duration {
 }
 func (s *RedisAdapterOptions) RequestsTimeout() time.Duration {
 	if s.requestsTimeout == nil {
-		return 5000 * time.Millisecond
+		return 0
 	}
 
 	return *s.requestsTimeout

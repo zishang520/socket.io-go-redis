@@ -59,8 +59,8 @@ github.com/zishang520/engine.io/v2 v2.4.9 h1:sk+Tu88NPpTfMgruElcTiKKHrX1xJxT4r48
 github.com/zishang520/engine.io/v2 v2.4.9/go.mod h1:tZQB2sEhLSbJiZPWlSJbnfZhnsycqMS/rZBXmlpacg0=
 github.com/zishang520/socket.io-go-parser/v2 v2.4.4 h1:Yyxc92gG4QEaTyVoCvSPCVV9Sw2Y6BsXu5kATulodU4=
 github.com/zishang520/socket.io-go-parser/v2 v2.4.4/go.mod h1:w3K5xGhN5CmUl3I0urAxS9GVdgCXC18HZM9oX1StPIY=
-github.com/zishang520/socket.io/v2 v2.4.4 h1:Y6IwlAuGaeIf6CPHU7ejFUSIDIKs5ufAVcbrqiag4bE=
-github.com/zishang520/socket.io/v2 v2.4.4/go.mod h1:87w3RiQlwZDbzqowm6ixTPINfM5xlaG3qlIPdtMuyvo=
+github.com/zishang520/socket.io/v2 v2.4.7 h1:C94GkT80U24re3ZN/iiy7dYJ4vcgEXXasIWfGvmAmO4=
+github.com/zishang520/socket.io/v2 v2.4.7/go.mod h1:87w3RiQlwZDbzqowm6ixTPINfM5xlaG3qlIPdtMuyvo=
 github.com/zishang520/webtransport-go v0.8.6 h1:erNthZfrpb3q6OdrenNGQA9yyVuUP30PA4lC/uMoGAs=
 github.com/zishang520/webtransport-go v0.8.6/go.mod h1:AeawYIuV5bEiO5RMIGIBf1RNx2zlsm1wNvTi5u5/Z+0=
 go.uber.org/mock v0.5.0 h1:KAMbZvZPyBPWgD14IrIQ38QCyjwpvVVV6K/bHl1IwQU=

@@ -17,8 +17,8 @@ func TestEmitterOptions(t *testing.T) {
 		if opts.GetRawKey() != nil {
 			t.Fatal(`DefaultEmitterOptions.GetRawKey() value must be nil`)
 		}
-		if opts.Key() != "socket.io" {
-			t.Fatal(`DefaultEmitterOptions.Key() value must be "socket.io"`)
+		if opts.Key() != "" {
+			t.Fatal(`DefaultEmitterOptions.Key() value must be ""`)
 		}
 		opts.SetKey("test")
 		if opts.Key() != "test" {

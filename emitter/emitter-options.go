@@ -1,7 +1,6 @@
 package emitter
 
 import (
-	"github.com/zishang520/engine.io/v2/utils"
 	"github.com/zishang520/socket.io-go-redis/types"
 )
 
@@ -55,7 +54,7 @@ func (s *EmitterOptions) GetRawKey() *string {
 // Default: "socket.io"
 func (s *EmitterOptions) Key() string {
 	if s.key == nil {
-		return "socket.io"
+		return ""
 	}
 
 	return *s.key
@@ -71,9 +70,5 @@ func (s *EmitterOptions) GetRawParser() types.Parser {
 // The parser to use for encoding messages sent to Redis.
 // Defaults to msgpack, a MessagePack implementation.
 func (s *EmitterOptions) Parser() types.Parser {
-	if s.parser == nil {
-		return utils.MsgPack()
-	}
-
 	return s.parser
 }

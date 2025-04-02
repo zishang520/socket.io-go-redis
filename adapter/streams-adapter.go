@@ -14,10 +14,9 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/vmihailenco/msgpack/v5"
 	"github.com/zishang520/engine.io/v2/log"
-	"github.com/zishang520/engine.io/v2/types"
 	"github.com/zishang520/engine.io/v2/utils"
 	"github.com/zishang520/socket.io-go-parser/v2/parser"
-	_types "github.com/zishang520/socket.io-go-redis/types"
+	"github.com/zishang520/socket.io-go-redis/types"
 	"github.com/zishang520/socket.io/v2/adapter"
 	"github.com/zishang520/socket.io/v2/socket"
 )
@@ -33,17 +32,17 @@ const RESTORE_SESSION_MAX_XRANGE_CALLS = 100
 // Returns a function that will create a new adapter instance.
 type RedisStreamsAdapterBuilder struct {
 	// the Redis client used to publish/subscribe
-	Redis *_types.RedisClient
+	Redis *types.RedisClient
 	// some additional options
 	Opts RedisStreamsAdapterOptionsInterface
 
 	namespaceToAdapters types.Map[string, RedisStreamsAdapter]
-	offset              _types.String // Default:"$"
-	polling             atomic.Bool   // Default:false
-	shouldClose         atomic.Bool   // Default:false
+	offset              types.String // Default:"$"
+	polling             atomic.Bool  // Default:false
+	shouldClose         atomic.Bool  // Default:false
 }
 
-func (sb *RedisStreamsAdapterBuilder) poll() {
+func (sb *RedisStreamsAdapterBuilder) poll(options RedisStreamsAdapterOptionsInterface) {
 	for {
 		if sb.shouldClose.Load() || sb.namespaceToAdapters.Len() == 0 {
 			sb.polling.Store(false)
@@ -55,9 +54,9 @@ func (sb *RedisStreamsAdapterBuilder) poll() {
 			offset = "$"
 		}
 		response, err := sb.Redis.Client.XRead(sb.Redis.Context, &redis.XReadArgs{
-			Streams: []string{sb.Opts.StreamName()},
+			Streams: []string{options.StreamName()},
 			ID:      offset,
-			Count:   sb.Opts.ReadCount(),
+			Count:   options.ReadCount(),
 			Block:   5000 * time.Millisecond,
 		}).Result()
 
@@ -83,12 +82,33 @@ func (sb *RedisStreamsAdapterBuilder) poll() {
 }
 
 func (sb *RedisStreamsAdapterBuilder) New(nsp socket.Namespace) socket.Adapter {
-	adapter := NewRedisStreamsAdapter(nsp, sb.Redis, sb.Opts)
+	options := DefaultRedisStreamsAdapterOptions().Assign(sb.Opts)
+
+	if options.GetRawStreamName() == nil {
+		options.SetStreamName("socket.io")
+	}
+	if options.GetRawMaxLen() == nil {
+		options.SetMaxLen(10_000)
+	}
+	if options.GetRawReadCount() == nil {
+		options.SetReadCount(100)
+	}
+	if options.GetRawSessionKeyPrefix() == nil {
+		options.SetSessionKeyPrefix("sio:session:")
+	}
+	if options.GetRawHeartbeatInterval() == nil {
+		options.SetHeartbeatInterval(5_000)
+	}
+	if options.GetRawHeartbeatTimeout() == nil {
+		options.SetHeartbeatTimeout(10_000)
+	}
+
+	adapter := NewRedisStreamsAdapter(nsp, sb.Redis, options)
 	sb.namespaceToAdapters.Store(nsp.Name(), adapter)
 
 	if !sb.polling.CompareAndSwap(false, true) {
 		sb.shouldClose.Store(false)
-		go sb.poll()
+		go sb.poll(options)
 	}
 
 	adapter.Cleanup(func() {
@@ -104,7 +124,7 @@ func (sb *RedisStreamsAdapterBuilder) New(nsp socket.Namespace) socket.Adapter {
 type redisStreamsAdapter struct {
 	adapter.ClusterAdapterWithHeartbeat
 
-	redisClient *_types.RedisClient
+	redisClient *types.RedisClient
 	opts        *RedisStreamsAdapterOptions
 
 	_cleanup types.Callable
@@ -124,7 +144,7 @@ func MakeRedisStreamsAdapter() RedisStreamsAdapter {
 	return c
 }
 
-func NewRedisStreamsAdapter(nsp socket.Namespace, redis *_types.RedisClient, opts any) RedisStreamsAdapter {
+func NewRedisStreamsAdapter(nsp socket.Namespace, redis *types.RedisClient, opts any) RedisStreamsAdapter {
 	c := MakeRedisStreamsAdapter()
 
 	c.SetRedis(redis)
@@ -135,7 +155,7 @@ func NewRedisStreamsAdapter(nsp socket.Namespace, redis *_types.RedisClient, opt
 	return c
 }
 
-func (r *redisStreamsAdapter) SetRedis(redisClient *_types.RedisClient) {
+func (r *redisStreamsAdapter) SetRedis(redisClient *types.RedisClient) {
 	r.redisClient = redisClient
 }
 

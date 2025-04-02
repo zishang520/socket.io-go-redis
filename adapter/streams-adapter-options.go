@@ -56,12 +56,8 @@ func (s *RedisStreamsAdapterOptions) Assign(data RedisStreamsAdapterOptionsInter
 	if data == nil {
 		return s
 	}
-	if data.GetRawHeartbeatInterval() != nil {
-		s.SetHeartbeatInterval(data.HeartbeatInterval())
-	}
-	if data.GetRawHeartbeatTimeout() != nil {
-		s.SetHeartbeatTimeout(data.HeartbeatTimeout())
-	}
+
+	s.ClusterAdapterOptions.Assign(data)
 
 	if data.GetRawStreamName() != nil {
 		s.SetStreamName(data.StreamName())
@@ -87,7 +83,7 @@ func (s *RedisStreamsAdapterOptions) GetRawStreamName() *string {
 }
 func (s *RedisStreamsAdapterOptions) StreamName() string {
 	if s.streamName == nil {
-		return "socket.io"
+		return ""
 	}
 
 	return *s.streamName
@@ -101,7 +97,7 @@ func (s *RedisStreamsAdapterOptions) GetRawMaxLen() *int64 {
 }
 func (s *RedisStreamsAdapterOptions) MaxLen() int64 {
 	if s.maxLen == nil {
-		return 10_000
+		return 0
 	}
 
 	return *s.maxLen
@@ -115,7 +111,7 @@ func (s *RedisStreamsAdapterOptions) GetRawReadCount() *int64 {
 }
 func (s *RedisStreamsAdapterOptions) ReadCount() int64 {
 	if s.readCount == nil {
-		return 100
+		return 0
 	}
 
 	return *s.readCount
@@ -129,7 +125,7 @@ func (s *RedisStreamsAdapterOptions) GetRawSessionKeyPrefix() *string {
 }
 func (s *RedisStreamsAdapterOptions) SessionKeyPrefix() string {
 	if s.sessionKeyPrefix == nil {
-		return "sio:session:"
+		return ""
 	}
 
 	return *s.sessionKeyPrefix
