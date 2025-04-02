@@ -7,7 +7,7 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/zishang520/engine.io/v2 v2.4.9
 	github.com/zishang520/socket.io-go-parser/v2 v2.4.4
-	github.com/zishang520/socket.io/v2 v2.4.7
+	github.com/zishang520/socket.io/v2 v2.4.8
 )
 
 require (
