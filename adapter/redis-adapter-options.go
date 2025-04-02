@@ -43,9 +43,9 @@ func DefaultRedisAdapterOptions() *RedisAdapterOptions {
 	return &RedisAdapterOptions{}
 }
 
-func (s *RedisAdapterOptions) Assign(data RedisAdapterOptionsInterface) (RedisAdapterOptionsInterface, error) {
+func (s *RedisAdapterOptions) Assign(data RedisAdapterOptionsInterface) RedisAdapterOptionsInterface {
 	if data == nil {
-		return s, nil
+		return s
 	}
 	if data.GetRawKey() != nil {
 		s.SetKey(data.Key())
@@ -60,7 +60,7 @@ func (s *RedisAdapterOptions) Assign(data RedisAdapterOptionsInterface) (RedisAd
 		s.SetParser(data.Parser())
 	}
 
-	return s, nil
+	return s
 }
 
 func (s *RedisAdapterOptions) SetRequestsTimeout(requestsTimeout time.Duration) {

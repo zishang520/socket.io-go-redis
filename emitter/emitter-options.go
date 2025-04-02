@@ -30,9 +30,9 @@ func DefaultEmitterOptions() *EmitterOptions {
 	return &EmitterOptions{}
 }
 
-func (s *EmitterOptions) Assign(data EmitterOptionsInterface) (EmitterOptionsInterface, error) {
+func (s *EmitterOptions) Assign(data EmitterOptionsInterface) EmitterOptionsInterface {
 	if data == nil {
-		return s, nil
+		return s
 	}
 
 	if data.GetRawKey() != nil {
@@ -42,7 +42,7 @@ func (s *EmitterOptions) Assign(data EmitterOptionsInterface) (EmitterOptionsInt
 		s.SetParser(data.Parser())
 	}
 
-	return s, nil
+	return s
 }
 
 func (s *EmitterOptions) SetKey(key string) {

@@ -52,9 +52,9 @@ func DefaultRedisStreamsAdapterOptions() *RedisStreamsAdapterOptions {
 	return &RedisStreamsAdapterOptions{}
 }
 
-func (s *RedisStreamsAdapterOptions) Assign(data RedisStreamsAdapterOptionsInterface) (RedisStreamsAdapterOptionsInterface, error) {
+func (s *RedisStreamsAdapterOptions) Assign(data RedisStreamsAdapterOptionsInterface) RedisStreamsAdapterOptionsInterface {
 	if data == nil {
-		return s, nil
+		return s
 	}
 	if data.GetRawHeartbeatInterval() != nil {
 		s.SetHeartbeatInterval(data.HeartbeatInterval())
@@ -76,7 +76,7 @@ func (s *RedisStreamsAdapterOptions) Assign(data RedisStreamsAdapterOptionsInter
 		s.SetSessionKeyPrefix(data.SessionKeyPrefix())
 	}
 
-	return s, nil
+	return s
 }
 
 func (s *RedisStreamsAdapterOptions) SetStreamName(streamName string) {

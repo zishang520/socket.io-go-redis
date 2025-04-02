@@ -5,9 +5,9 @@ go 1.24.1
 require (
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/vmihailenco/msgpack/v5 v5.4.1
-	github.com/zishang520/engine.io/v2 v2.4.8
-	github.com/zishang520/socket.io-go-parser/v2 v2.4.3
-	github.com/zishang520/socket.io/v2 v2.4.3
+	github.com/zishang520/engine.io/v2 v2.4.9
+	github.com/zishang520/socket.io-go-parser/v2 v2.4.4
+	github.com/zishang520/socket.io/v2 v2.4.4
 )
 
 require (
@@ -18,6 +18,7 @@ require (
 	github.com/google/pprof v0.0.0-20230821062121-407c9e7a662f // indirect
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/onsi/ginkgo/v2 v2.12.0 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.50.1 // indirect

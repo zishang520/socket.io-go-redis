@@ -53,9 +53,9 @@ func DefaultShardedRedisAdapterOptions() *ShardedRedisAdapterOptions {
 	return &ShardedRedisAdapterOptions{}
 }
 
-func (s *ShardedRedisAdapterOptions) Assign(data ShardedRedisAdapterOptionsInterface) (ShardedRedisAdapterOptionsInterface, error) {
+func (s *ShardedRedisAdapterOptions) Assign(data ShardedRedisAdapterOptionsInterface) ShardedRedisAdapterOptionsInterface {
 	if data == nil {
-		return s, nil
+		return s
 	}
 	if data.GetRawChannelPrefix() != nil {
 		s.SetChannelPrefix(data.ChannelPrefix())
@@ -65,7 +65,7 @@ func (s *ShardedRedisAdapterOptions) Assign(data ShardedRedisAdapterOptionsInter
 		s.SetSubscriptionMode(data.SubscriptionMode())
 	}
 
-	return s, nil
+	return s
 }
 
 func (s *ShardedRedisAdapterOptions) SetChannelPrefix(channelPrefix string) {
