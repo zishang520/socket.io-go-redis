@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/wuchieh/socket.io-go-redis/types"
 	"github.com/zishang520/engine.io/v2/utils"
-	"github.com/zishang520/socket.io-go-redis/types"
 )
 
 func TestEmitterOptions(t *testing.T) {

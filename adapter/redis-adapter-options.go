@@ -3,7 +3,7 @@ package adapter
 import (
 	"time"
 
-	"github.com/zishang520/socket.io-go-redis/emitter"
+	"github.com/wuchieh/socket.io-go-redis/emitter"
 )
 
 type (

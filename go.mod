@@ -1,4 +1,5 @@
-module github.com/zishang520/socket.io-go-redis
+// fork from github.com/zishang520/socket.io-go-redis
+module github.com/wuchieh/socket.io-go-redis
 
 go 1.24.1
 

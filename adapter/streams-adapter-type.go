@@ -1,7 +1,7 @@
 package adapter
 
 import (
-	"github.com/zishang520/socket.io-go-redis/types"
+	"github.com/wuchieh/socket.io-go-redis/types"
 	"github.com/zishang520/socket.io/v2/adapter"
 )
 

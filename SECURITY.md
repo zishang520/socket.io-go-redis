@@ -12,4 +12,4 @@ currently being supported with security updates.
 
 ## Reporting a Vulnerability
 
-Submit [issues](https://github.com/zishang520/socket.io-go-redis/issues)
+Submit [issues](https://github.com/wuchieh/socket.io-go-redis/issues)

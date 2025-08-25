@@ -1,7 +1,7 @@
 
 # socket.io-go-redis
 
-[![Go](https://github.com/zishang520/socket.io-go-redis/actions/workflows/go.yml/badge.svg)](https://github.com/zishang520/socket.io-go-redis/actions/workflows/go.yml)
+[![Go](https://github.com/wuchieh/socket.io-go-redis/actions/workflows/go.yml/badge.svg)](https://github.com/wuchieh/socket.io-go-redis/actions/workflows/go.yml)
 [![GoDoc](https://pkg.go.dev/badge/github.com/zishang520/socket.io-go-redis?utm_source=godoc)](https://pkg.go.dev/github.com/zishang520/socket.io-go-redis)
 
 ## How to use
@@ -18,10 +18,10 @@ import (
 
     "github.com/redis/go-redis/v9"
     s "github.com/zishang520/engine.io/v2/types"
-    "github.com/zishang520/socket.io-go-redis/adapter"
-    "github.com/zishang520/socket.io-go-redis/types"
+    "github.com/wuchieh/socket.io-go-redis/adapter"
+    "github.com/wuchieh/socket.io-go-redis/types"
     "github.com/zishang520/socket.io/v2/socket"
-    // "github.com/zishang520/socket.io-go-redis/emitter"
+    // "github.com/wuchieh/socket.io-go-redis/emitter"
 )
 
 func main() {
@@ -87,7 +87,7 @@ make test
 
 ## Support
 
-[issues](https://github.com/zishang520/socket.io-go-redis/issues)
+[issues](https://github.com/wuchieh/socket.io-go-redis/issues)
 
 ## Development
 
